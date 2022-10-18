@@ -36,7 +36,7 @@ const Login = ({ onSubmit, schema, children }) => {
           initialValues={{
             email: '',
             password: '',
-            rememberMe: false,
+            rememberMe: true,
           }}
           onSubmit={onSubmit}
           validationSchema={schema}
@@ -58,7 +58,7 @@ const Login = ({ onSubmit, schema, children }) => {
                   <Typography variant="epsilon" textColor="neutral600">
                     {formatMessage({
                       id: 'Auth.form.welcome.subtitle',
-                      defaultMessage: 'Log in to your Strapi account',
+                      defaultMessage: 'Log in to your Strapi account (local account; not Windows or TCE)',
                     })}
                   </Typography>
                 </Box>
