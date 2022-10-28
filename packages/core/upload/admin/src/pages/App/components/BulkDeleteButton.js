@@ -9,10 +9,47 @@ import { useIntl } from 'react-intl';
 import { AssetDefinition, FolderDefinition } from '../../../constants';
 import { useBulkRemove } from '../../../hooks/useBulkRemove';
 
+import getRequestUrl from '../../../utils/getRequestUrl';
+import axios from 'axios';
+import { createReferenceMarkup, disableLoadingButton, enableLoadingButton, addLoadingIndicator, removeLoadingIndicator } from '../../../utils/assetReferenceHelper';
+
 export const BulkDeleteButton = ({ selected, onSuccess }) => {
   const { formatMessage } = useIntl();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const { isLoading, remove } = useBulkRemove();
+
+
+  /**
+   * method that retreives all references for selected assets
+   * and visualizes a list of the entries
+   */
+  const retrieveAssetsWithReferences = () => {
+    const type = 'files';
+
+    const assetPromises = selected.map((sel) => {
+      const url = getRequestUrl(`/${type}/${sel.id}?populate=references`);
+  
+      return axios({
+        url: `/api${url}`,
+        method: 'GET',
+        responseType: 'json',
+      });
+    });
+  
+    Promise.all(assetPromises).then(responses => {
+      removeLoadingIndicator();
+      const assetRefList = responses.map(r => r.data.references || []);
+      createReferenceMarkup('confirm-description', assetRefList);
+    }).finally(() => {
+      enableLoadingButton('confirm-delete');
+    });
+  
+  
+    window.setTimeout(() => {
+      disableLoadingButton('confirm-delete');
+      addLoadingIndicator('confirm-description');
+    }, 0);
+  };
 
   const handleConfirmRemove = async () => {
     await remove(selected);
@@ -25,7 +62,7 @@ export const BulkDeleteButton = ({ selected, onSuccess }) => {
         variant="danger-light"
         size="S"
         startIcon={<Trash />}
-        onClick={() => setShowConfirmDialog(true)}
+        onClick={() => {retrieveAssetsWithReferences(); setShowConfirmDialog(true)}}
       >
         {formatMessage({ id: 'global.delete', defaultMessage: 'Delete' })}
       </Button>

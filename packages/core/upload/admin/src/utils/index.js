@@ -4,6 +4,7 @@ export { default as createAssetUrl } from './createAssetUrl';
 export { default as findRecursiveFolderByValue } from './findRecursiveFolderByValue';
 export { default as findRecursiveFolderMetadatas } from './findRecursiveFolderMetadatas';
 export { default as formatBytes } from './formatBytes';
+export * from './assetReferenceHelper';
 export * from './formatDuration';
 export { default as getBreadcrumbDataCM } from './getBreadcrumbDataCM';
 export { default as getBreadcrumbDataML } from './getBreadcrumbDataML';
