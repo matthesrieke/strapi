@@ -1,5 +1,7 @@
 'use strict';
 
+const { resolve } = require('path');
+const { readdirSync, readFileSync } = require('fs');
 const _ = require('lodash');
 const utils = require('@strapi/utils');
 const { getService } = require('../utils');
@@ -30,6 +32,112 @@ const sanitizeQuery = async (data, ctx) => {
   return sanitize.contentAPI.query(data, schema, { auth });
 };
 
+
+/**
+ * resolve all API schemas with richtext content
+ */
+function getFiles(rootDir) {
+  const dirs = readdirSync(rootDir, { withFileTypes: true });
+  const files = dirs.map((dir) => {
+    const res = resolve(rootDir, dir.name);
+    return dir.isDirectory() ? getFiles(res) : (res.indexOf('schema.json') > 0 ? res : null);
+  }).filter(f => f !== null);
+  return Array.prototype.concat(...files);
+}
+
+const apiFiles = getFiles(resolve(strapi.dirs.app.api));
+
+const contentTypes = [];
+
+apiFiles.forEach(af => {
+  let data = readFileSync(af);
+  let asJson = JSON.parse(data);
+
+  const name = asJson.info.singularName;
+  const richTextFields = [];
+
+  for (const key in asJson.attributes) {
+    if (Object.hasOwnProperty.call(asJson.attributes, key)) {
+      const element = asJson.attributes[key];
+      if (element.type === 'richtext') {
+        richTextFields.push(key);
+      }
+    }
+  }
+
+  if (richTextFields.length > 0) {
+    contentTypes.push({ name: `api::${name}.${name}`, richTextFields: richTextFields });
+  }
+
+});
+
+
+async function resolveReferences(file) {
+
+  let results = {};
+
+  /**
+   * query relevant content types
+   */
+  for await (const ct of contentTypes) {
+    const ors = []
+    for (const rtf of ct.richTextFields) {
+      const innerWhere = {
+        [rtf]: {
+          $contains: file.name,
+        }
+      };
+
+      ors.push(innerWhere);
+    }
+
+    const queryResponse = await strapi.query(ct.name).findMany({
+      where: {
+        $or: ors
+      }
+    });
+    results[ct.name] = queryResponse.map(e => e.id);
+
+  }
+
+  /**
+   * query image attributes
+   */
+
+  // TODO where can we get this table name from?
+  const FILES_RELATION_TABLE_NAME = 'files_related_morphs';
+  const conn = strapi.db.getConnection(FILES_RELATION_TABLE_NAME);
+
+  const queryRows = await conn.select('*').from(FILES_RELATION_TABLE_NAME).where({ file_id: file.id });
+
+  for (const r of queryRows) {
+    if (!results[r.related_type]) {
+      results[r.related_type] = [];
+    }
+    if (results[r.related_type].indexOf(r.related_id) < 0) {
+      results[r.related_type].push(r.related_id);
+    }
+
+  }
+
+  /**
+   * prepare response as array
+   */
+  const resultArray = []
+  for (const key in results) {
+    if (Object.hasOwnProperty.call(results, key)) {
+      const entries = results[key];
+      entries.forEach(entr => {
+        resultArray.push({ collectionType: key, id: entr })
+      });
+    }
+  }
+
+  return resultArray;
+
+
+};
+
 module.exports = {
   async find(ctx) {
     await validateQuery(ctx.query, ctx);
@@ -54,7 +162,17 @@ module.exports = {
       return ctx.notFound('file.notFound');
     }
 
-    ctx.body = await sanitizeOutput(file, ctx);
+    const payload = await sanitizeOutput(file, ctx);
+
+    // add references if requested
+    const parsedUrl = new URL(`https://dummy.host${ctx.req.url}`);
+    console.log('parsedUrl.searchParams', parsedUrl.searchParams.has('populate'));
+    if (parsedUrl.searchParams && parsedUrl.searchParams.has('populate') && parsedUrl.searchParams.get('populate') === 'references') {
+      const references = await resolveReferences(file);
+      payload.references = references;
+    }
+
+    ctx.body = payload;
   },
 
   async destroy(ctx) {
