@@ -24,12 +24,16 @@ export const BulkDeleteButton = ({ selected, onSuccess }) => {
    * and visualizes a list of the entries
    */
   const retrieveAssetsWithReferences = () => {
+    const axiosInstance = axios.create({
+      baseURL: process.env.STRAPI_ADMIN_BACKEND_URL,
+    });
+    
     const type = 'files';
 
     const assetPromises = selected.map((sel) => {
       const url = getRequestUrl(`/${type}/${sel.id}?populate=references`);
-  
-      return axios({
+
+      return axiosInstance({
         url: `/api${url}`,
         method: 'GET',
         responseType: 'json',
