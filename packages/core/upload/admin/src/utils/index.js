@@ -10,4 +10,6 @@ export { default as getBreadcrumbDataCM } from './getBreadcrumbDataCM';
 export { default as getFolderURL } from './getFolderURL';
 export { default as getFolderParents } from './getFolderParents';
 export { default as toSingularTypes } from './toSingularTypes';
+export * from './assetReferenceHelper';
+
 export * from './formatDuration';
