@@ -13,7 +13,11 @@ export const RemoveAssetDialog = ({ onClose, asset }) => {
   const type = 'files';
   const url = getRequestUrl(`/${type}/${asset.id}?populate=references`);
 
-  axios({
+  const axiosInstance = axios.create({
+    baseURL: process.env.STRAPI_ADMIN_BACKEND_URL,
+  });
+
+  axiosInstance({
     url: `/api${url}`,
     method: 'GET',
     responseType: 'json',
