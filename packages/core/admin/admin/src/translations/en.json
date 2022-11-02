@@ -810,6 +810,7 @@
   "content-manager.relation.publicationState.draft": "Draft",
   "content-manager.relation.publicationState.published": "Published",
   "content-manager.reviewWorkflows.stage.label": "Review stage",
+  "content-manager.relations.undefined": "The updated entry defines relations to other collections. At least one of these is not set. Please make sure that this is intended.",
   "content-manager.select.currently.selected": "{count} currently selected",
   "content-manager.success.record.delete": "Deleted",
   "content-manager.success.record.publish": "Published",
