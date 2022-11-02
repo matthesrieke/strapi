@@ -1,6 +1,10 @@
 
 export const createReferenceMarkup = (containerElementId, assetRefList) => {
     const container = document.getElementById(containerElementId);
+    if (!container) {
+        return;
+    }
+    
     const assetReferencesDiv = document.createElement('div');
     assetReferencesDiv.classList = 'asset-references-container';
     assetReferencesDiv.style = 'max-height: 25vh; overflow-y: scroll;';
@@ -37,22 +41,47 @@ export const createReferenceMarkup = (containerElementId, assetRefList) => {
 
 };
 
+export const createWarningMessage = (containerElementId, warningMessage) => {
+    const container = document.getElementById(containerElementId);
+    if (!container) {
+        return;
+    }
+
+    const assetWarningDiv = document.createElement('div');
+    assetWarningDiv.classList = 'asset-references-warning';
+    assetWarningDiv.innerHTML = warningMessage;
+    container.appendChild(assetWarningDiv);
+};
+
 export const disableLoadingButton = (buttonElementId) => {
-    document.getElementById(buttonElementId).setAttribute('aria-disabled', true);
+    const elem = document.getElementById(buttonElementId);
+    if (elem) {
+        elem.setAttribute('aria-disabled', true);
+    }
 }
 
 export const enableLoadingButton = (buttonElementId) => {
-    document.getElementById(buttonElementId).setAttribute('aria-disabled', false);
+    const elem = document.getElementById(buttonElementId);
+    if (elem) {
+        elem.setAttribute('aria-disabled', false);
+    }
 }
 
 export const addLoadingIndicator = (containerElementId) => {
-    const indic = document.createElement('div');
-    indic.id = 'references-loading-indicator';
-    indic.innerText = '...loading references...';
-    document.getElementById(containerElementId).appendChild(indic);
+    const elem = document.getElementById(containerElementId);
+    if (elem) {
+        const indic = document.createElement('div');
+        indic.id = 'references-loading-indicator';
+        indic.innerText = '...loading references...';
+        elem.appendChild(indic);
+    }
+    
 }
 
 export const removeLoadingIndicator = () => {
-    document.getElementById('references-loading-indicator').remove();
+    const elem = document.getElementById('references-loading-indicator');
+    if (elem) {
+        elem.remove();
+    }
 }
 

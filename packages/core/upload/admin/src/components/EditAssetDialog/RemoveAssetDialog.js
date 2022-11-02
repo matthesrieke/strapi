@@ -4,7 +4,7 @@ import { ConfirmDialog } from '@strapi/helper-plugin';
 import { useRemoveAsset } from '../../hooks/useRemoveAsset';
 import getRequestUrl from '../../utils/getRequestUrl';
 import axios from 'axios';
-import { createReferenceMarkup, disableLoadingButton, enableLoadingButton, addLoadingIndicator, removeLoadingIndicator } from '../../utils/assetReferenceHelper';
+import { createReferenceMarkup, disableLoadingButton, enableLoadingButton, addLoadingIndicator, removeLoadingIndicator, createWarningMessage } from '../../utils/assetReferenceHelper';
 
 export const RemoveAssetDialog = ({ onClose, asset }) => {
   // `null` means asset is deleted
@@ -27,7 +27,11 @@ export const RemoveAssetDialog = ({ onClose, asset }) => {
       const references = response.data.references;
       createReferenceMarkup('confirm-description', [references]);
     }
-  }).finally(() => {
+  }).catch((err) => {
+    console.log('Could not resolve references', err);
+    createWarningMessage('confirm-description', 'Could not load all references. Please contact your system administrator.');
+  })
+  .finally(() => {
     enableLoadingButton('confirm-delete');
   });
 
