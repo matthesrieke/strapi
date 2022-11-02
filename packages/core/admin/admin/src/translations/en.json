@@ -688,6 +688,7 @@
   "content-manager.popUpwarning.warning.has-draft-relations.button-confirm": "Yes, publish",
   "content-manager.popUpwarning.warning.has-draft-relations.message": "<b>{count, plural, =0 { of your content relations is} one { of your content relations is} other { of your content relations are}}</b> not published yet.<br></br>It might engender broken links and errors on your project.",
   "content-manager.popover.display-relations.label": "Display relations",
+  "content-manager.relations.undefined": "The updated entry defines relations to other collections. At least one of these is not set. Please make sure that this is intended.",
   "content-manager.select.currently.selected": "{count} currently selected",
   "content-manager.success.record.delete": "Deleted",
   "content-manager.success.record.publish": "Published",
