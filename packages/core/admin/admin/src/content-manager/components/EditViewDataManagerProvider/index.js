@@ -1,16 +1,6 @@
 /* eslint-disable react/jsx-no-constructed-context-values */
-import React, { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
-
-import { Main } from '@strapi/design-system';
-import {
-  ContentManagerEditViewDataManagerContext,
-  getAPIInnerErrors,
-  getYupInnerErrors,
-  LoadingIndicatorPage,
-  useNotification,
-  useOverlayBlocker,
-  useTracking,
-} from '@strapi/helper-plugin';
+import React, { useCallback, useEffect, useMemo, useRef, useState, useReducer } from 'react';
+import isEmpty from 'lodash/isEmpty';
 import cloneDeep from 'lodash/cloneDeep';
 import get from 'lodash/get';
 import isEmpty from 'lodash/isEmpty';
@@ -105,6 +95,8 @@ const EditViewDataManagerProvider = ({
     return false;
   }, [isLoadingForData, isCreatingEntry, canRead, canUpdate]);
 
+  const [hasUndefinedRelations, setUndefinedRelations] = useState(false);
+
   useEffect(() => {
     if (status === 'resolved') {
       unlockApp();
@@ -144,6 +136,18 @@ const EditViewDataManagerProvider = ({
       });
     }
   }, [shouldRedirectToHomepageWhenEditingEntry, toggleNotification]);
+
+  useEffect(() => {
+    if (hasUndefinedRelations) {
+      toggleNotification({
+        type: 'warning',
+        message: { id: getTrad('relations.undefined'), defaultMessage: `The updated entry defines relations to other collections. 
+        At least one of these is not set. Please make sure that this is intended.` },
+        blockTransition: true,
+      });
+      setUndefinedRelations(false);
+    }
+  }, [hasUndefinedRelations]);
 
   useEffect(() => {
     dispatch({
@@ -357,6 +361,21 @@ const EditViewDataManagerProvider = ({
     [allLayoutData.components, currentContentTypeLayout]
   );
 
+  const resolveUndefinedRelations = (formData) => {
+    let undefinedRelations = [];
+
+    for (const attr in currentContentTypeLayout.attributes) {
+      if (Object.hasOwnProperty.call(currentContentTypeLayout.attributes, attr)) {
+        const attrDefinition = currentContentTypeLayout.attributes[attr];
+        if (attrDefinition.type === 'relation' && (!formData[attr] || formData[attr] === null || formData[attr].length === 0)) {
+          undefinedRelations.push(attr);
+        }
+      }
+    }
+
+    return undefinedRelations;
+  };
+
   const trackerProperty = useMemo(() => {
     if (!hasDraftAndPublish) {
       return {};
@@ -398,6 +417,12 @@ const EditViewDataManagerProvider = ({
           }
 
           setIsSaving(false);
+
+          const undefinedRelations = resolveUndefinedRelations(formData);
+          if (undefinedRelations.length > 0) {
+            setUndefinedRelations(true);
+          }
+          
         }
       } catch (err) {
         setIsSaving(false);
