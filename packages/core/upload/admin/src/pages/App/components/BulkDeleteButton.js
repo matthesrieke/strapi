@@ -11,7 +11,7 @@ import { useBulkRemove } from '../../../hooks/useBulkRemove';
 
 import getRequestUrl from '../../../utils/getRequestUrl';
 import axios from 'axios';
-import { createReferenceMarkup, disableLoadingButton, enableLoadingButton, addLoadingIndicator, removeLoadingIndicator } from '../../../utils/assetReferenceHelper';
+import { createReferenceMarkup, disableLoadingButton, enableLoadingButton, addLoadingIndicator, removeLoadingIndicator, createWarningMessage } from '../../../utils/assetReferenceHelper';
 
 export const BulkDeleteButton = ({ selected, onSuccess }) => {
   const { formatMessage } = useIntl();
@@ -40,10 +40,18 @@ export const BulkDeleteButton = ({ selected, onSuccess }) => {
       });
     });
   
-    Promise.all(assetPromises).then(responses => {
+    Promise.allSettled(assetPromises).then(responses => {
       removeLoadingIndicator();
-      const assetRefList = responses.map(r => r.data.references || []);
-      createReferenceMarkup('confirm-description', assetRefList);
+      let unresolved = responses.map(r => r.status !== 'fulfilled');
+      if (unresolved.length > 0) {
+        console.log('Could not resolve references');
+        createWarningMessage('confirm-description', 'Could not load all references. Please contact your system administrator.');
+      }
+      let assetRefList = responses.map(r => r.status === 'fulfilled' && r.value.data.references ? r.value.data.references : []);
+      assetRefList = assetRefList.filter(rl => rl.length > 0);
+      if (assetRefList.length > 0) {
+        createReferenceMarkup('confirm-description', assetRefList);
+      }
     }).finally(() => {
       enableLoadingButton('confirm-delete');
     });
