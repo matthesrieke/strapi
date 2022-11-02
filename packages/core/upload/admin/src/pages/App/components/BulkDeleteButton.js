@@ -41,7 +41,7 @@ export const BulkDeleteButton = ({ selected, onSuccess }) => {
   
     Promise.allSettled(assetPromises).then(responses => {
       removeLoadingIndicator();
-      let unresolved = responses.map(r => r.status !== 'fulfilled');
+      let unresolved = responses.filter(r => r.status !== 'fulfilled');
       if (unresolved.length > 0) {
         console.log('Could not resolve references');
         createWarningMessage('confirm-description', 'Could not load all references. Please contact your system administrator.');
