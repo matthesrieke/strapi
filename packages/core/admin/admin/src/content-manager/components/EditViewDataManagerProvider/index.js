@@ -82,6 +82,33 @@ const EditViewDataManagerProvider = ({
 
   const [hasUndefinedRelations, setUndefinedRelations] = useState(false);
 
+  const resolveUndefinedRelations = (formData) => {
+    let undefinedRelations = [];
+
+    for (const attr in currentContentTypeLayout.attributes) {
+      if (Object.hasOwnProperty.call(currentContentTypeLayout.attributes, attr)) {
+        const attrDefinition = currentContentTypeLayout.attributes[attr];
+        if (attrDefinition.type === 'relation' && (!formData[attr] || formData[attr] === null || formData[attr].length === 0)) {
+          undefinedRelations.push(attr);
+        }
+      }
+    }
+
+    return undefinedRelations;
+  };
+
+  useEffect(() => {
+    if (hasUndefinedRelations) {
+      toggleNotification({
+        type: 'warning',
+        message: { id: getTrad('relations.undefined'), defaultMessage: `The current entry defines relations to other collections. 
+        At least one of these is not set. Please make sure that this is intended.` },
+        blockTransition: true,
+      });
+      setUndefinedRelations(false);
+    }
+  }, [hasUndefinedRelations]);
+
   useEffect(() => {
     if (status === 'resolved') {
       unlockApp();
@@ -123,18 +150,6 @@ const EditViewDataManagerProvider = ({
   }, [shouldRedirectToHomepageWhenEditingEntry, toggleNotification]);
 
   useEffect(() => {
-    if (hasUndefinedRelations) {
-      toggleNotification({
-        type: 'warning',
-        message: { id: getTrad('relations.undefined'), defaultMessage: `The updated entry defines relations to other collections. 
-        At least one of these is not set. Please make sure that this is intended.` },
-        blockTransition: true,
-      });
-      setUndefinedRelations(false);
-    }
-  }, [hasUndefinedRelations]);
-
-  useEffect(() => {
     dispatch({
       type: 'SET_DEFAULT_DATA_STRUCTURES',
       componentsDataStructure,
@@ -148,6 +163,15 @@ const EditViewDataManagerProvider = ({
         type: 'INIT_FORM',
         initialValues,
       });
+
+      // do an initial check for relations and present a warning
+      if (!isCreatingEntry) {
+        console.log('initialValues', initialValues);
+        const unresolvedRelations = resolveUndefinedRelations(initialValues);
+        if (unresolvedRelations.length > 0) {
+          setUndefinedRelations(true);
+        }
+      }
     }
   }, [initialValues]);
 
@@ -292,21 +316,6 @@ const EditViewDataManagerProvider = ({
     },
     [allLayoutData.components, currentContentTypeLayout]
   );
-
-  const resolveUndefinedRelations = (formData) => {
-    let undefinedRelations = [];
-
-    for (const attr in currentContentTypeLayout.attributes) {
-      if (Object.hasOwnProperty.call(currentContentTypeLayout.attributes, attr)) {
-        const attrDefinition = currentContentTypeLayout.attributes[attr];
-        if (attrDefinition.type === 'relation' && (!formData[attr] || formData[attr] === null || formData[attr].length === 0)) {
-          undefinedRelations.push(attr);
-        }
-      }
-    }
-
-    return undefinedRelations;
-  };
 
   const trackerProperty = useMemo(() => {
     if (!hasDraftAndPublish) {
