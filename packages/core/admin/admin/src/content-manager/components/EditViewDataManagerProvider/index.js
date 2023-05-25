@@ -122,11 +122,14 @@ const EditViewDataManagerProvider = ({
   };
 
   useEffect(() => {
-    if (hasUndefinedRelations) {
+    const messageForDisplay = 'The updated entry defines relations to other collections. ' +
+      'At least one of these is not set. Please make sure that this is intended.';
+
+    // only show the popup if it is not already present
+    if (hasUndefinedRelations && Array.from(document.querySelectorAll('[role="alert"]')).filter(m => m.innerText.indexOf(messageForDisplay) !== -1).length === 0) {
       toggleNotification({
         type: 'warning',
-        message: { id: getTrad('relations.undefined'), defaultMessage: `The current entry defines relations to other collections. 
-        At least one of these is not set. Please make sure that this is intended.` },
+        message: { id: getTrad('relations.undefined'), defaultMessage: messageForDisplay },
         blockTransition: true,
       });
       setUndefinedRelations(false);
