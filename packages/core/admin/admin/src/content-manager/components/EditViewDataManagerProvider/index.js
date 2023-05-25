@@ -112,7 +112,7 @@ const EditViewDataManagerProvider = ({
     for (const attr in currentContentTypeLayout.attributes) {
       if (Object.hasOwnProperty.call(currentContentTypeLayout.attributes, attr)) {
         const attrDefinition = currentContentTypeLayout.attributes[attr];
-        if (attrDefinition.type === 'relation' && (!formData[attr] || formData[attr] === null || formData[attr].length === 0)) {
+        if (attrDefinition.type === 'relation' && (!formData[attr] || formData[attr] === null || (formData[attr].count && formData[attr].count === 0))) {
           undefinedRelations.push(attr);
         }
       }
