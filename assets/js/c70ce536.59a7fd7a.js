@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[328],{7963:e=>{e.exports=JSON.parse('{"title":"Core","slug":"/category/core","permalink":"/strapi/category/core","navigation":{"previous":{"title":"Introduction","permalink":"/strapi/"},"next":{"title":"Introduction","permalink":"/strapi/content-manager"}}}')}}]);
