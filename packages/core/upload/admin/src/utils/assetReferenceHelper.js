@@ -25,7 +25,8 @@ export const createReferenceMarkup = (containerElementId, assetRefList) => {
                 return;
             }
             i = i + 1;
-            const targetUrl = `/admin/content-manager/collectionType/${ref.collectionType}/${ref.id}`;
+            const baseUri = document.location.href.substring(0, document.location.href.indexOf('/admin/'));
+            const targetUrl = `${baseUri}/admin/content-manager/collectionType/${ref.collectionType}/${ref.id}`;
             const a = document.createElement('a');
             const text = document.createTextNode(targetUrl);
             a.appendChild(text);

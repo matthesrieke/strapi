@@ -119,7 +119,17 @@ async function resolveReferences(file) {
   for (const key in results) {
     if (Object.hasOwnProperty.call(results, key)) {
       const entries = results[key];
-      entries.forEach(entr => {
+
+      // filter out deleted items, 'files_related_morphs' seems to not be cleaned up on removal of entries
+      const queryResponse = await strapi.query(key).findMany({
+        filters: {
+          id: {
+            $in: entries
+          }
+        }
+      });
+
+      queryResponse.map(e => e.id).forEach(entr => {
         resultArray.push({ collectionType: key, id: entr })
       });
     }
