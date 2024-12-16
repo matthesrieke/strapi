@@ -1,11 +1,14 @@
 import React from 'react';
-import { act } from 'react-dom/test-utils';
-import { getByLabelText, render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { IntlProvider } from 'react-intl';
-import { ThemeProvider, lightTheme } from '@strapi/design-system';
 
+import { fixtures } from '@strapi/admin-test-utils';
+import { lightTheme, ThemeProvider } from '@strapi/design-system';
 import { useRBAC } from '@strapi/helper-plugin';
-import server from './server';
+import { fireEvent, getByLabelText, render, waitFor } from '@testing-library/react';
+import { IntlProvider } from 'react-intl';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { Provider } from 'react-redux';
+import { createStore } from 'redux';
+
 import { SingleSignOn } from '../index';
 
 jest.mock('@strapi/helper-plugin', () => ({
@@ -16,24 +19,51 @@ jest.mock('@strapi/helper-plugin', () => ({
   useFocusWhenNavigate: jest.fn(),
 }));
 
-const App = (
-  <ThemeProvider theme={lightTheme}>
-    <IntlProvider locale="en" messages={{}} textComponent="span">
-      <SingleSignOn />
-    </IntlProvider>
-  </ThemeProvider>
-);
+const setup = (props) =>
+  render(<SingleSignOn {...props} />, {
+    wrapper({ children }) {
+      const client = new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: false,
+          },
+        },
+      });
+
+      return (
+        <QueryClientProvider client={client}>
+          <Provider
+            store={createStore((state) => state, {
+              admin_app: {
+                permissions: {
+                  ...fixtures.permissions.app,
+                  settings: {
+                    ...fixtures.permissions.app.settings,
+                    sso: {
+                      main: [{ action: 'admin::provider-login.read', subject: null }],
+                      read: [{ action: 'admin::provider-login.read', subject: null }],
+                      update: [{ action: 'admin::provider-login.update', subject: null }],
+                    },
+                  },
+                },
+              },
+            })}
+          >
+            <ThemeProvider theme={lightTheme}>
+              <IntlProvider locale="en" messages={{}} textComponent="span">
+                {children}
+              </IntlProvider>
+            </ThemeProvider>
+          </Provider>
+        </QueryClientProvider>
+      );
+    },
+  });
 
 describe('Admin | ee | SettingsPage | SSO', () => {
-  beforeAll(() => server.listen());
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
-
-  afterEach(() => server.resetHandlers());
-
-  afterAll(() => server.close());
 
   it('renders and matches the snapshot', async () => {
     useRBAC.mockImplementation(() => ({
@@ -41,17 +71,11 @@ describe('Admin | ee | SettingsPage | SSO', () => {
       allowedActions: { canUpdate: true, canReadRoles: true },
     }));
 
-    const {
-      container: { firstChild },
-    } = render(App);
+    const { getByText } = setup();
 
     await waitFor(() =>
-      expect(
-        screen.getByText('Create new user on SSO login if no account exists')
-      ).toBeInTheDocument()
+      expect(getByText('Create new user on SSO login if no account exists')).toBeInTheDocument()
     );
-
-    expect(firstChild).toMatchSnapshot();
   });
 
   it('should disable the form when there is no change', async () => {
@@ -60,12 +84,10 @@ describe('Admin | ee | SettingsPage | SSO', () => {
       allowedActions: { canUpdate: true, canReadRoles: true },
     }));
 
-    const { getByTestId } = render(App);
+    const { getByTestId, getByText } = setup();
 
     await waitFor(() =>
-      expect(
-        screen.getByText('Create new user on SSO login if no account exists')
-      ).toBeInTheDocument()
+      expect(getByText('Create new user on SSO login if no account exists')).toBeInTheDocument()
     );
 
     expect(getByTestId('save-button')).toHaveAttribute('aria-disabled');
@@ -77,17 +99,15 @@ describe('Admin | ee | SettingsPage | SSO', () => {
       allowedActions: { canUpdate: true, canReadRoles: true },
     }));
 
-    const { container } = render(App);
+    const { container, getByTestId } = setup();
     let el;
 
-    await act(async () => {
-      await waitFor(() => {
-        el = getByLabelText(container, 'autoRegister');
-      });
+    await waitFor(() => {
+      return (el = getByLabelText(container, 'autoRegister'));
     });
 
     fireEvent.click(el);
 
-    expect(screen.getByTestId('save-button')).not.toBeDisabled();
+    expect(getByTestId('save-button')).not.toBeDisabled();
   });
 });

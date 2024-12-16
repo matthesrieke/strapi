@@ -5,13 +5,16 @@
  */
 
 import React from 'react';
+
+import { darkTheme, lightTheme } from '@strapi/design-system';
 import { render } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import { MemoryRouter } from 'react-router-dom';
-import { lightTheme, darkTheme } from '@strapi/design-system';
-import Theme from '../../../../../components/Theme';
-import ThemeToggleProvider from '../../../../../components/ThemeToggleProvider';
+
+import { Theme } from '../../../../../components/Theme';
+import { ThemeToggleProvider } from '../../../../../components/ThemeToggleProvider';
 import { Header } from '../index';
+
 import ct from './data/ct-schema.json';
 
 const defaultProps = {
@@ -53,31 +56,10 @@ describe('CONTENT MANAGER | EditView | Header', () => {
     } = render(makeApp());
 
     expect(firstChild).toMatchInlineSnapshot(`
-      .c0 {
-        background: #f6f6f9;
-        padding-top: 24px;
-        padding-right: 56px;
-        padding-bottom: 40px;
-        padding-left: 56px;
-      }
-
-      .c1 {
-        padding-bottom: 8px;
-      }
-
-      .c5 {
-        min-width: 0;
-      }
-
-      .c10 {
-        background: #4945ff;
-        padding: 8px;
-        padding-right: 16px;
-        padding-left: 16px;
-        border-radius: 4px;
-        border-color: #4945ff;
-        border: 1px solid #4945ff;
-        cursor: pointer;
+      .c4 {
+        font-size: 0.875rem;
+        line-height: 1.43;
+        color: #4945ff;
       }
 
       .c8 {
@@ -100,7 +82,34 @@ describe('CONTENT MANAGER | EditView | Header', () => {
         color: #666687;
       }
 
-      .c4 {
+      .c0 {
+        background: #f6f6f9;
+        padding-top: 24px;
+        padding-right: 56px;
+        padding-bottom: 40px;
+        padding-left: 56px;
+      }
+
+      .c1 {
+        padding-bottom: 8px;
+      }
+
+      .c6 {
+        min-width: 0;
+      }
+
+      .c10 {
+        background: #4945ff;
+        padding: 8px;
+        padding-right: 16px;
+        padding-left: 16px;
+        border-radius: 4px;
+        border-color: #4945ff;
+        border: 1px solid #4945ff;
+        cursor: pointer;
+      }
+
+      .c5 {
         -webkit-align-items: center;
         -webkit-box-align: center;
         -ms-flex-align: center;
@@ -118,7 +127,7 @@ describe('CONTENT MANAGER | EditView | Header', () => {
         justify-content: space-between;
       }
 
-      .c6 {
+      .c7 {
         -webkit-align-items: center;
         -webkit-box-align: center;
         -ms-flex-align: center;
@@ -200,16 +209,22 @@ describe('CONTENT MANAGER | EditView | Header', () => {
         height: 2rem;
       }
 
+      .c12 svg {
+        height: 0.75rem;
+        width: auto;
+      }
+
       .c12[aria-disabled='true'] {
         border: 1px solid #dcdce4;
         background: #eaeaef;
       }
 
-      .c12[aria-disabled='true'] .c7 {
+      .c12[aria-disabled='true'] .c3 {
         color: #666687;
       }
 
-      .c12[aria-disabled='true'] svg > g,.c12[aria-disabled='true'] svg path {
+      .c12[aria-disabled='true'] svg > g,
+      .c12[aria-disabled='true'] svg path {
         fill: #666687;
       }
 
@@ -218,11 +233,12 @@ describe('CONTENT MANAGER | EditView | Header', () => {
         background: #eaeaef;
       }
 
-      .c12[aria-disabled='true']:active .c7 {
+      .c12[aria-disabled='true']:active .c3 {
         color: #666687;
       }
 
-      .c12[aria-disabled='true']:active svg > g,.c12[aria-disabled='true']:active svg path {
+      .c12[aria-disabled='true']:active svg > g,
+      .c12[aria-disabled='true']:active svg path {
         fill: #666687;
       }
 
@@ -239,12 +255,6 @@ describe('CONTENT MANAGER | EditView | Header', () => {
       .c12 svg > g,
       .c12 svg path {
         fill: #ffffff;
-      }
-
-      .c3 {
-        font-size: 0.875rem;
-        line-height: 1.43;
-        color: #4945ff;
       }
 
       .c2 {
@@ -337,20 +347,20 @@ describe('CONTENT MANAGER | EditView | Header', () => {
                 />
               </svg>
               <span
-                class="c3"
+                class="c3 c4"
               >
                 Back
               </span>
             </a>
           </div>
           <div
-            class="c4"
+            class="c5"
           >
             <div
-              class="c5 c6"
+              class="c6 c7"
             >
               <h1
-                class="c7 c8"
+                class="c3 c8"
               >
                 Create an entry
               </h1>
@@ -365,7 +375,7 @@ describe('CONTENT MANAGER | EditView | Header', () => {
                 type="submit"
               >
                 <span
-                  class="c7 c13"
+                  class="c3 c13"
                 >
                   Save
                 </span>
@@ -373,7 +383,7 @@ describe('CONTENT MANAGER | EditView | Header', () => {
             </div>
           </div>
           <p
-            class="c7 c14"
+            class="c3 c14"
           >
             API ID  : restaurant
           </p>

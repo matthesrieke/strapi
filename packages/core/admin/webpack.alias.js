@@ -1,6 +1,5 @@
 'use strict';
 
-const path = require('path');
 const findRoot = require('find-root');
 
 const aliasExactMatch = [
@@ -14,12 +13,10 @@ const aliasExactMatch = [
   'qs',
   'lodash',
   'react',
-  'react-copy-to-clipboard',
   'react-dnd',
   'react-dnd-html5-backend',
   'react-dom',
   'react-error-boundary',
-  'react-fast-compare',
   'react-helmet',
   'react-is',
   'react-intl',
@@ -40,6 +37,4 @@ module.exports = {
     acc[`${moduleName}$`] = findRoot(require.resolve(moduleName));
     return acc;
   }, {}),
-
-  ee_else_ce: path.resolve(__dirname),
 };

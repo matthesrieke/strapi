@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+
+import { LoadingIndicatorPage } from '@strapi/helper-plugin';
 import PropTypes from 'prop-types';
 import { Route } from 'react-router-dom';
-import { LoadingIndicatorPage } from '@strapi/helper-plugin';
 
 const LazyCompo = ({ loadComponent }) => {
   const [Compo, setCompo] = useState(null);
@@ -11,7 +12,10 @@ const LazyCompo = ({ loadComponent }) => {
       try {
         const loadedCompo = await loadComponent();
 
-        setCompo(() => loadedCompo.default);
+        // TODO the loaded component provided can currently come from a default or named export
+        // We will move the entire codebase to use named exports only
+        // Until then we support both cases with priority given to the existing default exports
+        setCompo(() => loadedCompo?.default ?? loadedCompo);
       } catch (err) {
         // TODO return the error component
         console.log(err);

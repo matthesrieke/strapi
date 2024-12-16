@@ -12,17 +12,19 @@ const { init } = require('../../../../server/services/passport');
 describe('Passport', () => {
   afterEach(() => {
     // Reset the mock on passport.use.toHaveBeenCalledTimes
-    jest.resetAllMocks();
+    jest.clearAllMocks();
     // Reset the mock on strapi/ee so we can change its behavior
     jest.resetModules();
   });
 
   describe('Init (SSO disabled)', () => {
     beforeAll(() => {
-      jest.mock('@strapi/strapi/ee', () => ({
-        features: {
-          // Disable the SSO feature
-          isEnabled: (feature) => feature !== 'sso',
+      jest.mock('@strapi/strapi/dist/utils/ee', () => ({
+        default: {
+          features: {
+            // Disable the SSO feature
+            isEnabled: (feature) => feature !== 'sso',
+          },
         },
       }));
     });
@@ -57,10 +59,12 @@ describe('Passport', () => {
 
   describe('Init (SSO enabled)', () => {
     beforeAll(() => {
-      jest.mock('@strapi/strapi/ee', () => ({
-        features: {
-          // Enable all the features (including SSO)
-          isEnabled: () => true,
+      jest.mock('@strapi/strapi/dist/utils/ee', () => ({
+        default: {
+          features: {
+            // Enable all the features (including SSO)
+            isEnabled: () => true,
+          },
         },
       }));
     });

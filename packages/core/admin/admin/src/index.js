@@ -1,13 +1,20 @@
-import ReactDOM from 'react-dom';
 import { getFetchClient } from '@strapi/helper-plugin';
-import { Components, Fields, Middlewares, Reducers } from './core/apis';
+import { createRoot } from 'react-dom/client';
+
 import appCustomisations from './app';
+import { Components, Fields, Middlewares, Reducers } from './core/apis';
 // eslint-disable-next-line import/extensions
 import plugins from './plugins';
 import appReducers from './reducers';
 
 window.strapi = {
-  backendURL: process.env.STRAPI_ADMIN_BACKEND_URL,
+  /**
+   * This ENV variable is passed from the strapi instance, by default no url is set
+   * in the config and therefore the instance returns you an empty string so URLs are relative.
+   *
+   * To ensure that the backendURL is always set, we use the window.location.origin as a fallback.
+   */
+  backendURL: process.env.STRAPI_ADMIN_BACKEND_URL || window.location.origin,
   isEE: false,
   telemetryDisabled: process.env.STRAPI_TELEMETRY_DISABLED ?? false,
   features: {
@@ -16,6 +23,9 @@ window.strapi = {
     REVIEW_WORKFLOWS: 'review-workflows',
   },
   projectType: 'Community',
+  flags: {
+    nps: false,
+  },
 };
 
 const customConfig = appCustomisations;
@@ -34,16 +44,16 @@ const run = async () => {
   try {
     const {
       data: {
-        data: { isEE, features },
+        data: { isEE, features, flags },
       },
     } = await get('/admin/project-type');
 
     window.strapi.isEE = isEE;
+    window.strapi.flags = flags;
     window.strapi.features = {
       ...window.strapi.features,
       isEnabled: (featureName) => features.some((feature) => feature.name === featureName),
     };
-
     window.strapi.projectType = isEE ? 'Enterprise' : 'Community';
   } catch (err) {
     console.error(err);
@@ -68,7 +78,8 @@ const run = async () => {
 
   await app.loadTrads();
 
-  ReactDOM.render(app.render(), MOUNT_NODE);
+  const root = createRoot(MOUNT_NODE);
+  root.render(app.render());
 };
 
 run();

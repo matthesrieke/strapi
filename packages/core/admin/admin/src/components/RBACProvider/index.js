@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+
 import { LoadingIndicatorPage, RBACProviderContext } from '@strapi/helper-plugin';
 import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
+
 import { resetStore, setPermissions } from './actions';
 
 const RBACProvider = ({ children, permissions, refetchPermissions }) => {
@@ -29,7 +31,7 @@ const RBACProvider = ({ children, permissions, refetchPermissions }) => {
 };
 
 RBACProvider.propTypes = {
-  children: PropTypes.element.isRequired,
+  children: PropTypes.node.isRequired,
   permissions: PropTypes.array.isRequired,
   refetchPermissions: PropTypes.func.isRequired,
 };

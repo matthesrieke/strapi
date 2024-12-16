@@ -1,19 +1,22 @@
-import { render } from '@testing-library/react';
 import { fixtures } from '@strapi/admin-test-utils';
+import { render, waitFor } from '@testing-library/react';
+
 import { Components, Fields } from '../core/apis';
-import StrapiApp from '../StrapiApp';
 import appReducers from '../reducers';
+import StrapiApp from '../StrapiApp';
 
 const library = { fields: Fields(), components: Components() };
 const middlewares = { middlewares: [] };
 const reducers = { reducers: appReducers };
 
 describe('ADMIN | StrapiApp', () => {
-  it('should render the app without plugins', () => {
+  it('should render the app without plugins', async () => {
     const app = StrapiApp({ middlewares, reducers, library });
-    const { container } = render(app.render());
+    const { container, getByRole } = render(app.render());
 
     expect(container.firstChild).toMatchSnapshot();
+
+    await waitFor(() => expect(getByRole('combobox')).toBeInTheDocument());
   });
 
   it('should create a valid store', () => {
