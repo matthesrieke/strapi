@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-no-constructed-context-values */
-import React, { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useReducer, useState } from 'react';
 
 import { Main } from '@strapi/design-system';
 import {
@@ -105,6 +105,42 @@ const EditViewDataManagerProvider = ({
     return false;
   }, [isLoadingForData, isCreatingEntry, canRead, canUpdate]);
 
+  const [hasUndefinedRelations, setUndefinedRelations] = useState(false);
+
+  const resolveUndefinedRelations = (formData) => {
+    let undefinedRelations = [];
+
+    for (const attr in currentContentTypeLayout.attributes) {
+      if (Object.hasOwnProperty.call(currentContentTypeLayout.attributes, attr)) {
+        const attrDefinition = currentContentTypeLayout.attributes[attr];
+        if (attrDefinition.type === 'relation' && (!formData[attr] || formData[attr] === null || formData[attr].count === 0)) {
+          undefinedRelations.push(attr);
+        }
+      }
+    }
+
+    return undefinedRelations;
+  };
+
+  useEffect(() => {
+    const messageForDisplay = 'The updated entry defines relations to other collections. ' +
+      'At least one of these is not set. Please make sure that this is intended.';
+
+    if (hasUndefinedRelations) {
+      // only show the popup if it is not already present
+      if (Array.from(document.querySelectorAll('[role="alert"]')).filter(m => m.innerText.indexOf(messageForDisplay) !== -1).length === 0) {
+        toggleNotification({
+          type: 'warning',
+          message: { id: getTrad('relations.undefined'), defaultMessage: messageForDisplay },
+          blockTransition: true,
+        });
+      }
+      
+      setUndefinedRelations(false);
+    }
+  }, [hasUndefinedRelations]);
+
+
   useEffect(() => {
     if (status === 'resolved') {
       unlockApp();
@@ -181,6 +217,14 @@ const EditViewDataManagerProvider = ({
        */
       if (setModifiedDataOnly) {
         reduxDispatch(clearSetModifiedDataOnly());
+      }
+      // do an initial check for relations and present a warning
+      if (!isCreatingEntry) {
+        console.log('initialValues', initialValues);
+        const unresolvedRelations = resolveUndefinedRelations(initialValues);
+        if (unresolvedRelations.length > 0) {
+          setUndefinedRelations(true);
+        }
       }
     }
   }, [
@@ -397,6 +441,11 @@ const EditViewDataManagerProvider = ({
             await onPut(formData, trackerProperty);
           }
 
+          const undefinedRelations = resolveUndefinedRelations(formData);
+          if (undefinedRelations.length > 0) {
+            setUndefinedRelations(true);
+          }
+          
           setIsSaving(false);
         }
       } catch (err) {
